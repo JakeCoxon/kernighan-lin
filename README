@@ -1,0 +1,1 @@
+An implentation of the Kernighan-Lin heuristic algorithm for splitting a graph into two groups where the weights of the edges between groups (cutting cost) is minimised.
