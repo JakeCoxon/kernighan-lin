@@ -11,50 +11,50 @@ import java.util.LinkedList;
  *
  */
 public class KernighanLin {
-	public static KernighanLin process(Graph g) {
-		return new KernighanLin(g);
-	}
-	
-	public class VertexGroup extends HashSet<Vertex> {  
-	  public VertexGroup(HashSet<Vertex> clone) { super(clone); }
-	  public VertexGroup() { }
-	}
-	
-	final private VertexGroup A, B;
-	final private VertexGroup unswappedA, unswappedB;
-	public VertexGroup getGroupA() { return A; }
+  public static KernighanLin process(Graph g) {
+    return new KernighanLin(g);
+  }
+  
+  public class VertexGroup extends HashSet<Vertex> {  
+    public VertexGroup(HashSet<Vertex> clone) { super(clone); }
+    public VertexGroup() { }
+  }
+  
+  final private VertexGroup A, B;
+  final private VertexGroup unswappedA, unswappedB;
+  public VertexGroup getGroupA() { return A; }
   public VertexGroup getGroupB() { return B; }
-	
-	final private Graph graph;
+  
+  final private Graph graph;
   final private int partitionSize;
-	
-	private KernighanLin(Graph g) {
-		this.graph = g;
-		this.partitionSize = g.getVertices().size() / 2;
-		
-		if (g.getVertices().size() != partitionSize * 2) 
-		  throw new RuntimeException("Size of vertices must be even");
-		
-		A = new VertexGroup();
-		B = new VertexGroup();
-		
-		// Split vertices into A and B
-		int i = 0;
-		for (Vertex v : g.getVertices()) {
-			(++i > partitionSize ? B : A).add(v);
-		}
-		unswappedA = new VertexGroup(A);
-		unswappedB = new VertexGroup(B);
-		
-		doAllSwaps();
-	}
-	
-	/** Performs |V|/2 swaps and chooses the one with least cut cost one **/
-	private void doAllSwaps() {
+  
+  private KernighanLin(Graph g) {
+    this.graph = g;
+    this.partitionSize = g.getVertices().size() / 2;
+    
+    if (g.getVertices().size() != partitionSize * 2) 
+      throw new RuntimeException("Size of vertices must be even");
+    
+    A = new VertexGroup();
+    B = new VertexGroup();
+    
+    // Split vertices into A and B
+    int i = 0;
+    for (Vertex v : g.getVertices()) {
+      (++i > partitionSize ? B : A).add(v);
+    }
+    unswappedA = new VertexGroup(A);
+    unswappedB = new VertexGroup(B);
+    
+    doAllSwaps();
+  }
+  
+  /** Performs |V|/2 swaps and chooses the one with least cut cost one **/
+  private void doAllSwaps() {
 
-	  LinkedList<Pair<Vertex>> swaps = new LinkedList<Pair<Vertex>>();
-	  int minCost = Integer.MAX_VALUE, minId = -1;
-	  
+    LinkedList<Pair<Vertex>> swaps = new LinkedList<Pair<Vertex>>();
+    int minCost = Integer.MAX_VALUE, minId = -1;
+    
     for (int i = 0; i < partitionSize; i++) {
       int cost = doSingleSwap(swaps);
       if (cost < minCost) {
@@ -68,10 +68,10 @@ public class KernighanLin {
       // unswap
       swapVertices(A, pair.second, B, pair.first);
     }
-	}
-	
-	/** Chooses the least cost swap and performs it **/
-	private int doSingleSwap(Deque<Pair<Vertex>> swaps) {
+  }
+  
+  /** Chooses the least cost swap and performs it **/
+  private int doSingleSwap(Deque<Pair<Vertex>> swaps) {
     
     Pair<Vertex> maxPair = null;
     int maxGain = Integer.MIN_VALUE;
@@ -100,11 +100,11 @@ public class KernighanLin {
     unswappedB.remove(maxPair.second);
     
     return getCutCost();
-	}
+  }
 
-	/** Returns the difference of external cost and internal cost of this vertex.
-	 *  When moving a vertex from within group A, all internal edges become external 
-	 *  edges and vice versa. **/
+  /** Returns the difference of external cost and internal cost of this vertex.
+   *  When moving a vertex from within group A, all internal edges become external 
+   *  edges and vice versa. **/
   private int getVertexCost(Vertex v) {
     int cost = 0;
 
@@ -145,8 +145,8 @@ public class KernighanLin {
     a.remove(va); a.add(vb);
     b.remove(vb); b.add(va);
   }
-	
-	
+  
+  
 
-	
+  
 }
