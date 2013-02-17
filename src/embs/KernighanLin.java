@@ -3,6 +3,7 @@ package embs;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * An implentation of the Kernighan-Lin heuristic algorithm for splitting a graph into 
@@ -11,6 +12,25 @@ import java.util.LinkedList;
  *
  */
 public class KernighanLin {
+  
+  /** Performs KernighanLin with only the given vertices **/
+  public static KernighanLin processWithVertices(Graph g, Set<Vertex> vertexSet) {
+    Graph newG = new Graph();
+    
+    for (Vertex v : vertexSet) 
+      newG.addVertex(v);
+    
+    for (Edge e : g.getEdges()) {
+      Pair<Vertex> endpoints = g.getEndpoints(e);
+      
+      if (vertexSet.contains(endpoints.first) && 
+          vertexSet.contains(endpoints.second))
+        newG.addEdge(e, endpoints.first, endpoints.second);
+    }
+    return process(newG);
+  }
+  
+  /** Performs KerninghanLin on the given graph **/
   public static KernighanLin process(Graph g) {
     return new KernighanLin(g);
   }
@@ -26,6 +46,7 @@ public class KernighanLin {
   public VertexGroup getGroupB() { return B; }
   
   final private Graph graph;
+  public Graph getGraph() { return graph; }
   final private int partitionSize;
   
   private KernighanLin(Graph g) {
@@ -46,6 +67,8 @@ public class KernighanLin {
     unswappedA = new VertexGroup(A);
     unswappedB = new VertexGroup(B);
     
+    System.out.println(A.size()+" "+B.size());
+    
     doAllSwaps();
   }
   
@@ -53,10 +76,11 @@ public class KernighanLin {
   private void doAllSwaps() {
 
     LinkedList<Pair<Vertex>> swaps = new LinkedList<Pair<Vertex>>();
-    int minCost = Integer.MAX_VALUE, minId = -1;
+    double minCost = Double.POSITIVE_INFINITY;
+    int minId = -1;
     
     for (int i = 0; i < partitionSize; i++) {
-      int cost = doSingleSwap(swaps);
+      double cost = doSingleSwap(swaps);
       if (cost < minCost) {
         minCost = cost; minId = i; 
       }
@@ -71,20 +95,20 @@ public class KernighanLin {
   }
   
   /** Chooses the least cost swap and performs it **/
-  private int doSingleSwap(Deque<Pair<Vertex>> swaps) {
+  private double doSingleSwap(Deque<Pair<Vertex>> swaps) {
     
     Pair<Vertex> maxPair = null;
-    int maxGain = Integer.MIN_VALUE;
+    double maxGain = Double.NEGATIVE_INFINITY;
     
     for (Vertex v_a : unswappedA) {
       for (Vertex v_b : unswappedB) {
         
         Edge e = graph.findEdge(v_a, v_b);
-        int edge_cost = (e != null) ? e.weight : 0;
+        double edge_cost = (e != null) ? e.weight : 0;
         // Calculate the gain in cost if these vertices were swapped
         // subtract 2*edge_cost because this edge will still be an external edge
         // after swapping
-        int gain = getVertexCost(v_a) + getVertexCost(v_b) - 2 * edge_cost;
+        double gain = getVertexCost(v_a) + getVertexCost(v_b) - 2 * edge_cost;
         
         if (gain > maxGain) {
           maxPair = new Pair<Vertex>(v_a, v_b);
@@ -105,12 +129,14 @@ public class KernighanLin {
   /** Returns the difference of external cost and internal cost of this vertex.
    *  When moving a vertex from within group A, all internal edges become external 
    *  edges and vice versa. **/
-  private int getVertexCost(Vertex v) {
-    int cost = 0;
+  private double getVertexCost(Vertex v) {
+    
+    double cost = 0;
 
     boolean v1isInA = A.contains(v);
     
     for (Vertex v2 : graph.getNeighbors(v)) {
+      
       boolean v2isInA = A.contains(v2);
       Edge edge = graph.findEdge(v, v2);
       
@@ -123,8 +149,8 @@ public class KernighanLin {
   }
   
   /** Returns the sum of the costs of all edges between A and B **/
-  public int getCutCost() {
-    int cost = 0;
+  public double getCutCost() {
+    double cost = 0;
 
     for (Edge edge : graph.getEdges()) {
       Pair<Vertex> endpoints = graph.getEndpoints(edge);

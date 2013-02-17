@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
 
@@ -21,13 +23,7 @@ public class KernighanLinProgram {
   
   public KernighanLinProgram() throws IOException {
 
-    FileReader fileReader = new FileReader("graph.txt");
-    BufferedReader bufferedReader = new BufferedReader(fileReader);
-    
-    Graph g = fromReadable(bufferedReader);
-    bufferedReader.close();
-    
-    KernighanLin k = KernighanLin.process(g);
+    KernighanLin k = KernighanLin.process(graphFromFile("graph.txt"));
 
     System.out.print("Group A: ");
     for (Vertex x : k.getGroupA())
@@ -39,7 +35,17 @@ public class KernighanLinProgram {
     System.out.println("Cut cost: "+k.getCutCost());
   }
   
-  public Graph fromReadable(Readable readable) {
+  public static Graph graphFromFile(String filename) throws IOException {
+    FileReader fileReader = new FileReader(filename);
+    BufferedReader bufferedReader = new BufferedReader(fileReader);
+    
+    Graph g = fromReadable(bufferedReader);
+    bufferedReader.close();
+    
+    return g;
+  }
+  
+  public static Graph fromReadable(Readable readable) {
     Graph graph = new Graph();
     HashMap<String, Vertex> names = new HashMap<String, Vertex>();
     
@@ -58,15 +64,44 @@ public class KernighanLinProgram {
     }
 
     s.skip("\nedges:");
-    while (s.findInLine("([A-Z])([A-Z])\\(([0-9]+)\\)") != null) {
+    while (s.findInLine("([A-Z])([A-Z])\\(([0-9]+(?:\\.[0-9]+)?)\\)") != null) {
       MatchResult match = s.match();
       
       Vertex first = names.get(match.group(1));
       Vertex second = names.get(match.group(2));
-      Integer weight = Integer.parseInt(match.group(3));
+      Double weight = Double.parseDouble(match.group(3));
       graph.addEdge(new Edge(weight), first, second);
     }
     return graph;
+  }
+  
+  /** Adds a random vertex on an edge if the number of 
+   *  vertices in the given graph isn't even */
+  public static void makeVerticesEven(Graph g) {
+    if (g.getVertices().size() % 2 == 0) return;
+    
+    ArrayList<Vertex> vlist = new ArrayList<Vertex>();
+    for (Vertex v : g.getVertices()) vlist.add(v);
+    Random r = new Random();
+    Vertex randomV = vlist.get(r.nextInt(vlist.size()));
+    Vertex newV = new Vertex("?");
+    Edge newE = new Edge(0);
+    
+    g.addVertex(newV);
+    g.addEdge(newE, newV, randomV);
+  }
+  
+  public static void printGraph(Graph g) {
+    for (Vertex v : g.getVertices())
+      System.out.print(v+" ");
+    System.out.println();
+    
+    for (Edge e : g.getEdges()) {
+      Pair<Vertex> endpoints = g.getEndpoints(e);
+      System.out.print(endpoints.first+""+endpoints.second+"("+e.weight+") ");
+    }
+    System.out.println();
+    
   }
   
 }
